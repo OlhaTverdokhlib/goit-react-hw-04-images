@@ -1,70 +1,53 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 import searchbarStyles from './Searchbar.module.css';
 import search from '../../images/search.svg';
 
+const Searchbar = ({ onSubmit }) => {
+  const [name, setName] = useState('');
 
-class Searchbar extends React.Component {
-  state = {
-    name: '',
+  const onChange = e => {
+    const { value } = e.target;
+    setName(value);
   };
 
-  static defaultProps = {
-    name: '',
-  };
-
-  static propTypes = {
-    onSubmit: PropTypes.func.isRequired,
-  };
-
-  onChange = e => {
-    const { name, value } = e.target;
-    this.setState({ [name]: value });
-  };
-
-  onSubmit = e => {
+  const handleSubmit = e => {
     e.preventDefault();
-    this.props.onSelectName(this.state.name);
-    this.reset();
+    onSubmit(name);
+    reset();
   };
 
-  reset = () => {
-    this.setState({
-      name: '',
-    });
+  const reset = () => {
+    setName('');
   };
 
-  render() {
-    const { name } = this.state;
+  return (
+    <header className={searchbarStyles.searchbar}>
+      <form className={searchbarStyles.searchForm} onSubmit={handleSubmit}>
+        <button type="submit" className={searchbarStyles.searchFormBtn}>
+          <img className={searchbarStyles.iconSearch} src={search} alt="icon" />
+          <span className={searchbarStyles.searchFormBtnLabel}>Search</span>
+        </button>
 
-    return (
-      <header className={searchbarStyles.searchbar}>
-        <form className={searchbarStyles.searchForm} onSubmit={this.onSubmit}>
-          <button type="submit" className={searchbarStyles.searchFormBtn}>
-            <img
-              className={searchbarStyles.iconSearch}
-              src={search}
-              alt="icon"
-            />
-            <span className={searchbarStyles.searchFormBtnLabel}>Search</span>
-          </button>
+        <input
+          className={searchbarStyles.searchFormInput}
+          type="text"
+          name="name"
+          value={name}
+          onChange={onChange}
+          autoComplete="off"
+          autoFocus
+          required
+          placeholder="Search images and photos"
+        />
+      </form>
+    </header>
+  );
+};
 
-          <input
-            className={searchbarStyles.searchFormInput}
-            type="text"
-            name="name"
-            value={name}
-            onChange={this.onChange}
-            autoComplete="off"
-            autoFocus
-            required
-            placeholder="Search images and photos"
-          />
-        </form>
-      </header>
-    );
-  }
-}
+Searchbar.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+};
 
 export default Searchbar;

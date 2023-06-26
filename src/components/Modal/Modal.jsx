@@ -1,34 +1,31 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 import modalStyles from './Modal.module.css';
+const Modal = ({ largeImage, onClose }) => {
+  useEffect(() => {
+    const closeModalByEscape = event => {
+      if (event.code === 'Escape') {
+        onClose();
+      }
+    };
 
-class Modal extends Component {
-  componentDidMount() {
-    window.addEventListener('keydown', this.closeModalByEscape);
-  }
+    window.addEventListener('keydown', closeModalByEscape);
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.closeModalByEscape);
-  }
+    return () => {
+      window.removeEventListener('keydown', closeModalByEscape);
+    };
+  }, [onClose]);
 
-  closeModalByEscape = event => {
-    if (event.code === 'Escape') {
-      this.props.onClose();
-    }
-  };
-
-  render() {
-    const { largeImage, onClose } = this.props;
-    return (
-      <div className={modalStyles.overlay} onClick={onClose}>
-        <div className={modalStyles.modal}>
-          <img src={largeImage} alt="Large" />
-        </div>
+  return (
+    <div className={modalStyles.overlay} onClick={onClose}>
+      <div className={modalStyles.modal}>
+        <img src={largeImage} alt="Large" />
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
+
 
 Modal.propTypes = {
   largeImage: PropTypes.string.isRequired,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { getPhotoByName } from 'services/api';
 import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
@@ -7,73 +7,65 @@ import Loader from './Loader';
 import Modal from './Modal';
 import appStyles from './App.module.css';
 
-export class App extends React.Component {
-  state = {
-    name: '',
-    photos: [],
-    isLoading: false,
-    error: '',
-    page: 1,
-    largeImage: '',
-  };
+const App = () => {
+  const [name, setName] = useState('');
+  const [photos, setPhotos] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [largeImage, setLargeImage] = useState('');
 
-  fetchPhotoByName = async name => {
+  const fetchPhotoByName = async () => {
     try {
-      this.setState({ isLoading: true });
-      const photoByName = await getPhotoByName(name, this.state.page);
-      this.setState(prevState => ({
-        photos: [...prevState.photos, ...photoByName],
-      }));
+      setIsLoading(true);
+      const photoByName = await getPhotoByName(name, page);
+      setPhotos(prevPhotos => [...prevPhotos, ...photoByName]);
     } catch (err) {
-      this.setState({
-        error: err.message,
-      });
+      setError(err.message);
     } finally {
-      this.setState({ isLoading: false });
+      setIsLoading(false);
     }
   };
 
-  componentDidUpdate(_, prevState) {
-    if (
-      prevState.name !== this.state.name ||
-      prevState.page !== this.state.page
-    ) {
-      this.fetchPhotoByName(this.state.name);
-    }
-  }
 
-  onSelectName = name => {
-    this.setState({ name: name, photos: [], page: 1 });
+  useEffect(() => {
+    fetchPhotoByName();
+  }, [name, page]);
+
+  const onSelectName = selectedName => {
+    setName(selectedName);
+    setPhotos([]);
+    setPage(1);
   };
 
-  onClickBtn = () => {
-    this.setState({ page: this.state.page + 1 });
+  const onClickBtn = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  onClickImage = src => {
-    this.setState({ largeImage: src });
+  const onClickImage = src => {
+    setLargeImage(src);
   };
 
-  onCloseModal = () => {
-    this.setState({ largeImage: '' });
+  const onCloseModal = () => {
+    setLargeImage('');
   };
 
-  render() {
-    const { error, isLoading, photos, largeImage } = this.state;
-    const minVisibleImages = 12;
-    return (
-      <div className={appStyles.container}>
-        <Searchbar onSelectName={this.onSelectName} />
-        {error.length > 0 && <p>Upss, Some error occured... {error}</p>}
-        {isLoading && <Loader />}
-        <ImageGallery photos={photos} onClick={this.onClickImage} />
-        {photos.length > 0 && photos.length >= minVisibleImages && (
-          <Button onClick={this.onClickBtn} />
-        )}
-        {!!largeImage.length && (
-          <Modal onClose={this.onCloseModal} largeImage={largeImage} />
-        )}
-      </div>
-    );
-  }
-}
+  const minVisibleImages = 12;
+
+  return (
+    <div className={appStyles.container}>
+      <Searchbar onSubmit={onSelectName} />
+      {error.length > 0 && <p>Upss, Some error occurred... {error}</p>}
+      {isLoading && <Loader />}
+      <ImageGallery photos={photos} onClick={onClickImage} />
+      {photos.length > 0 && photos.length >= minVisibleImages && (
+        <Button onClick={onClickBtn} />
+      )}
+      {!!largeImage.length && (
+        <Modal onClose={onCloseModal} largeImage={largeImage} />
+      )}
+    </div>
+  );
+};
+
+export default App;
